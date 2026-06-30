@@ -1,0 +1,122 @@
+{
+  "snapshot_date": "2026-06-27",
+  "source_note": "Auto-refreshed 2026-06-27 via LiteLLM pricing database. GPU providers without public pricing APIs kept from previous snapshot \u2014 verify manually at: https://www.coreweave.com/gpu-cloud-computing, https://aws.amazon.com/machine-learning/trainium/pricing/, https://cloud.google.com/tpu/pricing",
+  "models": {
+    "claude_haiku_4_5": {
+      "display_name": "Claude Haiku 4.5",
+      "provider": "Anthropic",
+      "tier": "budget",
+      "input_per_million": 1.0,
+      "output_per_million": 5.0,
+      "_resolved_as": "claude-haiku-4-5-20251001"
+    },
+    "claude_sonnet_4_6": {
+      "display_name": "Claude Sonnet 4.6",
+      "provider": "Anthropic",
+      "tier": "premium",
+      "input_per_million": 3.0,
+      "output_per_million": 15.0,
+      "_resolved_as": "claude-sonnet-4-6"
+    },
+    "gpt_4o_mini": {
+      "display_name": "GPT-4o Mini",
+      "provider": "OpenAI",
+      "tier": "budget",
+      "input_per_million": 0.15,
+      "output_per_million": 0.6,
+      "_resolved_as": "gpt-4o-mini"
+    },
+    "gpt_5_5": {
+      "display_name": "GPT-5.5",
+      "provider": "OpenAI",
+      "tier": "frontier",
+      "input_per_million": 5.0,
+      "output_per_million": 30.0,
+      "_resolved_as": "gpt-5.5"
+    },
+    "gemini_flash_35": {
+      "display_name": "Gemini 3.5 Flash",
+      "provider": "Google",
+      "tier": "budget",
+      "input_per_million": 0.3,
+      "output_per_million": 2.5,
+      "_resolved_as": "gemini/gemini-2.5-flash"
+    },
+    "gemini_pro_31": {
+      "display_name": "Gemini 3.1 Pro",
+      "provider": "Google",
+      "tier": "premium",
+      "input_per_million": 1.25,
+      "output_per_million": 10.0,
+      "_resolved_as": "gemini/gemini-2.5-pro"
+    }
+  },
+  "open_weight_models": {
+    "llama_31_8b": {
+      "display_name": "Llama 3.1 8B",
+      "quality_tier": "budget",
+      "comparable_api": "Claude Haiku / GPT-4o Mini quality range",
+      "tps_multiplier": 4.0,
+      "min_gpus": 1,
+      "notes": "Meta open-weight. Excellent throughput on any GPU. Best for simple classification, FAQ, short-form tasks."
+    },
+    "llama_31_70b": {
+      "display_name": "Llama 3.1 70B",
+      "quality_tier": "mid",
+      "comparable_api": "Near Claude Sonnet / GPT-4o quality",
+      "tps_multiplier": 1.0,
+      "min_gpus": 2,
+      "notes": "Meta flagship mid-size. Requires 2+ H100s at BF16. Strong reasoning, coding, and instruction following."
+    },
+    "llama_31_405b": {
+      "display_name": "Llama 3.1 405B",
+      "quality_tier": "frontier",
+      "comparable_api": "Near GPT-4.5 / Claude Opus quality",
+      "tps_multiplier": 0.18,
+      "min_gpus": 8,
+      "notes": "Meta frontier open-weight. Requires 8-GPU node (tensor parallelism). Use only when closed-frontier quality needed at scale."
+    },
+    "qwen3_32b": {
+      "display_name": "Qwen3 32B",
+      "quality_tier": "mid",
+      "comparable_api": "Competitive with Claude Sonnet on coding and reasoning",
+      "tps_multiplier": 2.2,
+      "min_gpus": 1,
+      "notes": "Alibaba open-weight. Strong coding/math. Single H100 fits at BF16. Good cost-quality balance."
+    }
+  },
+  "gpu_providers": {
+    "coreweave_h100": {
+      "display_name": "CoreWeave H100",
+      "provider": "CoreWeave",
+      "chip": "H100 SXM5",
+      "hourly_cost_per_gpu": 6.16,
+      "tokens_per_second_per_gpu": 2500,
+      "notes": "Purpose-built GPU cloud. No hyperscaler overhead. Strong for LLM inference. $49.24/hr per 8-GPU HGX node normalized to per-GPU."
+    },
+    "lambda_labs_h100": {
+      "display_name": "Lambda Labs H100",
+      "provider": "Lambda Labs",
+      "chip": "H100 SXM4",
+      "hourly_cost_per_gpu": 3.29,
+      "tokens_per_second_per_gpu": 2200,
+      "notes": "Researcher-friendly neocloud. $2.99-3.99/hr per GPU range; using $3.29 midpoint. Limited SLA guarantees."
+    },
+    "aws_trainium2": {
+      "display_name": "AWS Trainium2",
+      "provider": "AWS",
+      "chip": "Trainium2",
+      "hourly_cost_per_gpu": 1.85,
+      "tokens_per_second_per_gpu": 2000,
+      "notes": "Capacity Block reservations only — no on-demand pricing. trn2.48xlarge (16 chips) effective rate ~$29.60/hr instance = $1.85/chip. Requires Neuron SDK. Used to train Claude. Verify at aws.amazon.com/ec2/capacityblocks/pricing/"
+    },
+    "gcp_tpu_v5": {
+      "display_name": "GCP TPU v5e",
+      "provider": "Google Cloud",
+      "chip": "TPU v5e",
+      "hourly_cost_per_gpu": 1.20,
+      "tokens_per_second_per_gpu": 2300,
+      "notes": "$1.20/chip-hour on-demand in us-central1 (confirmed cloud.google.com/tpu/pricing 2026-06-28). ~35% cheaper than CoreWeave H100. Best for JAX/TensorFlow workloads."
+    }
+  }
+}

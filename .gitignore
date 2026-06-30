@@ -1,0 +1,32 @@
+# ── Secrets — never commit ──────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Python ───────────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# ── Node / Next.js (frontend/) ──────────────────────────────────────────
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/.vercel
+frontend/*.tsbuildinfo
+frontend/next-env.d.ts
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ── OS / editor noise ────────────────────────────────────────────────────
+.DS_Store
+*.pem
+
+# ── Debug/scratch artifacts from local testing — never commit ───────────
+debug_*.json
+_triage_check.py
