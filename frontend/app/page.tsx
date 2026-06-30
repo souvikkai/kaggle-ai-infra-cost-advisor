@@ -220,17 +220,17 @@ function AssumptionsTable({ assumptions }: { assumptions: PlanStructuredAssumpti
     const source = cell?.source ?? "missing";
     return (
       <tr key={fieldKey} style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-        <td style={{ padding: "8px 0", fontSize: 11, color: T.textMuted, fontFamily: "'DM Mono', monospace" }}>{label}</td>
-        <td style={{ padding: "8px 0", fontSize: 12, color: "#E5E7EB", fontFamily: "'DM Mono', monospace" }}>{display}</td>
+        <td style={{ padding: "8px 0", fontSize: T.fontSmall, color: T.textMuted, fontFamily: "'DM Mono', monospace" }}>{label}</td>
+        <td style={{ padding: "8px 0", fontSize: T.fontBody, color: "#E5E7EB", fontFamily: "'DM Mono', monospace" }}>{display}</td>
         <td style={{ padding: "8px 0", paddingLeft: 8, textAlign: "right" }}>
           {source === "user_provided" && (
-            <span style={{ fontSize: 9, letterSpacing: "0.12em", color: "#7C3AED", fontFamily: "'DM Mono', monospace", background: "rgba(124,58,237,0.12)", padding: "2px 6px", borderRadius: 3, border: "1px solid rgba(124,58,237,0.25)" }}>PROVIDED</span>
+            <span style={{ fontSize: T.fontMicro, letterSpacing: "0.12em", color: "#7C3AED", fontFamily: "'DM Mono', monospace", background: "rgba(124,58,237,0.12)", padding: "2px 6px", borderRadius: 3, border: "1px solid rgba(124,58,237,0.25)" }}>PROVIDED</span>
           )}
           {source === "assumed" && (
-            <span style={{ fontSize: 9, letterSpacing: "0.12em", color: "#F59E0B", fontFamily: "'DM Mono', monospace", background: "rgba(245,158,11,0.1)", padding: "2px 6px", borderRadius: 3, border: "1px solid rgba(245,158,11,0.25)" }}>ESTIMATED</span>
+            <span style={{ fontSize: T.fontMicro, letterSpacing: "0.12em", color: "#F59E0B", fontFamily: "'DM Mono', monospace", background: "rgba(245,158,11,0.1)", padding: "2px 6px", borderRadius: 3, border: "1px solid rgba(245,158,11,0.25)" }}>ESTIMATED</span>
           )}
           {source === "missing" && (
-            <span style={{ fontSize: 9, letterSpacing: "0.12em", color: T.textDim, fontFamily: "'DM Mono', monospace" }}>MISSING</span>
+            <span style={{ fontSize: T.fontMicro, letterSpacing: "0.12em", color: T.textDim, fontFamily: "'DM Mono', monospace" }}>MISSING</span>
           )}
         </td>
       </tr>
@@ -240,13 +240,13 @@ function AssumptionsTable({ assumptions }: { assumptions: PlanStructuredAssumpti
   return (
     <div style={{ marginTop: 16 }}>
       <div style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 9, letterSpacing: "0.18em", color: T.textMuted, fontFamily: "'DM Mono', monospace", marginBottom: 8 }}>WORKLOAD</div>
+        <div style={{ fontSize: T.fontMicro, letterSpacing: "0.18em", color: T.textMuted, fontFamily: "'DM Mono', monospace", marginBottom: 8 }}>WORKLOAD</div>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <tbody>{workloadFields.map((f) => renderRow(f, assumptions.workload?.[f]))}</tbody>
         </table>
       </div>
       <div>
-        <div style={{ fontSize: 9, letterSpacing: "0.18em", color: T.textMuted, fontFamily: "'DM Mono', monospace", marginBottom: 8 }}>COMPLEXITY PROFILE</div>
+        <div style={{ fontSize: T.fontMicro, letterSpacing: "0.18em", color: T.textMuted, fontFamily: "'DM Mono', monospace", marginBottom: 8 }}>COMPLEXITY PROFILE</div>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <tbody>{complexityFields.map((f) => renderRow(f, assumptions.complexity?.[f]))}</tbody>
         </table>
@@ -441,20 +441,23 @@ function buildSimulationDescription(plannerMessage: string, manual: ManualWorklo
 /* ─────────────────────────── design tokens ─────────────────────────── */
 
 const T = {
-  bg: "#05050A",
-  surface: "#0A0A12",
-  border: "rgba(255,255,255,0.06)",
-  borderStrong: "rgba(255,255,255,0.11)",
+  bg: "#0F0F17",
+  surface: "#1A1A24",
+  border: "rgba(255,255,255,0.09)",
+  borderStrong: "rgba(255,255,255,0.16)",
   text: "#F9FAFB",
-  textMuted: "#9CA3AF",
-  textDim: "#6B7280",
+  textMuted: "#C7CCD4",
+  textDim: "#8B92A0",
   ink: "#0A0A12",
   amber: "#F59E0B",
   amberDim: "rgba(245,158,11,0.12)",
   amberBorder: "rgba(245,158,11,0.25)",
-  violet: "#7C3AED",
-  violetDim: "rgba(124,58,237,0.12)",
-  violetBorder: "rgba(124,58,237,0.25)",
+  violet: "#A78BFA",
+  violetDim: "rgba(167,139,250,0.14)",
+  violetBorder: "rgba(167,139,250,0.3)",
+  // Darker shade for solid-fill buttons/badges where white text sits on top —
+  // T.violet itself is now too light for white text to stay readable on.
+  violetSolid: "#7C3AED",
   pink: "#EC4899",
   pinkDim: "rgba(236,72,153,0.12)",
   pinkBorder: "rgba(236,72,153,0.25)",
@@ -463,6 +466,13 @@ const T = {
   blueBorder: "rgba(59,130,246,0.25)",
   mono: "'DM Mono', 'Fira Code', monospace",
   sans: "'Syne', 'DM Sans', system-ui, sans-serif",
+  // Type scale — bumped up twice after feedback that the UI read as too small
+  // and the gray/violet-on-black combination was hard to read. Keep using
+  // these tokens for new text rather than raw numbers.
+  fontMicro: 13,   // badges, tags, role labels ("YOU", "PROVIDED", section index numbers)
+  fontSmall: 15,   // field labels, captions, secondary metadata
+  fontBody: 17,    // primary readable content — chat messages, table values, inputs
+  fontHeading: 19, // card titles, panel headers
 };
 
 /* ─────────────────── reusable components ─────────────────── */
@@ -470,9 +480,9 @@ const T = {
 function SectionHeader({ index, label }: { index: string; label: string }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-      <span style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: "0.22em", color: T.textDim }}>{index}</span>
+      <span style={{ fontFamily: T.mono, fontSize: T.fontMicro, letterSpacing: "0.22em", color: T.textDim }}>{index}</span>
       <div style={{ flex: 1, height: 1, background: T.border }} />
-      <span style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: "0.22em", color: T.textMuted, textTransform: "uppercase" }}>{label}</span>
+      <span style={{ fontFamily: T.mono, fontSize: T.fontMicro, letterSpacing: "0.22em", color: T.textMuted, textTransform: "uppercase" }}>{label}</span>
     </div>
   );
 }
@@ -532,7 +542,7 @@ function StatusPill({ tone, label }: { tone: "collecting" | "ready" | "estimated
   return (
     <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: c.bg, border: `1px solid ${c.border}`, borderRadius: 20, padding: "4px 12px" }}>
       <div style={{ width: 5, height: 5, borderRadius: "50%", background: c.text, boxShadow: tone !== "collecting" ? `0 0 6px ${c.text}` : "none" }} />
-      <span style={{ fontSize: 10, fontFamily: T.mono, letterSpacing: "0.1em", color: c.text }}>{label}</span>
+      <span style={{ fontSize: T.fontMicro, fontFamily: T.mono, letterSpacing: "0.1em", color: c.text }}>{label}</span>
     </div>
   );
 }
@@ -993,10 +1003,6 @@ export default function Home() {
             </div>
             <span style={{ fontFamily: T.sans, fontSize: 14, fontWeight: 700, letterSpacing: "-0.02em", color: T.text }}>AI Cost Simulator</span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <span style={{ fontFamily: T.mono, fontSize: 10, letterSpacing: "0.16em", color: T.textDim }}>P5 · PORTFOLIO</span>
-            <span style={{ fontFamily: T.mono, fontSize: 10, letterSpacing: "0.1em", color: T.textDim }}>Souvik Kundu</span>
-          </div>
         </nav>
 
         {/* ── HERO ── */}
@@ -1024,8 +1030,8 @@ export default function Home() {
             {/* header */}
             <div style={{ padding: "20px 24px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: T.text, fontFamily: T.sans, marginBottom: 4 }}>Workload Planner</div>
-                <div style={{ fontSize: 12, color: T.textMuted, fontFamily: T.sans }}>Describe your AI workload in plain English. The planner collects assumptions conversationally and enables simulation when ready.</div>
+                <div style={{ fontSize: T.fontHeading, fontWeight: 600, color: T.text, fontFamily: T.sans, marginBottom: 4 }}>Workload Planner</div>
+                <div style={{ fontSize: T.fontSmall, color: T.textMuted, fontFamily: T.sans }}>Describe your AI workload in plain English. The planner collects assumptions conversationally and enables simulation when ready.</div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <StatusPill tone={plannerStatus.tone} label={plannerStatus.label} />
@@ -1034,7 +1040,7 @@ export default function Home() {
                   suppressHydrationWarning
                   type="button"
                   onClick={loadExample}
-                  style={{ fontFamily: T.mono, fontSize: 10, letterSpacing: "0.08em", padding: "6px 14px", border: `1px solid ${T.borderStrong}`, borderRadius: 6, background: "transparent", color: T.textMuted, cursor: "pointer" }}
+                  style={{ fontFamily: T.mono, fontSize: T.fontMicro, letterSpacing: "0.08em", padding: "6px 14px", border: `1px solid ${T.borderStrong}`, borderRadius: 6, background: "transparent", color: T.textMuted, cursor: "pointer" }}
                 >
                   LOAD EXAMPLE
                 </button>
@@ -1055,10 +1061,10 @@ export default function Home() {
                         marginLeft: turn.role === "user" ? 32 : 0,
                         marginRight: turn.role === "planner" ? 32 : 0,
                       }}>
-                        <div style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: "0.14em", color: turn.role === "user" ? T.textDim : "#7C3AED", marginBottom: 6 }}>
+                        <div style={{ fontFamily: T.mono, fontSize: T.fontMicro, letterSpacing: "0.14em", color: turn.role === "user" ? T.textDim : "#7C3AED", marginBottom: 6 }}>
                           {turn.role === "user" ? "YOU" : "PLANNER"}
                         </div>
-                        <div style={{ fontSize: 13, lineHeight: 1.65, color: "#D1D5DB", whiteSpace: "pre-wrap", fontFamily: T.sans }}>{turn.content}</div>
+                        <div style={{ fontSize: T.fontBody, lineHeight: 1.65, color: "#D1D5DB", whiteSpace: "pre-wrap", fontFamily: T.sans }}>{turn.content}</div>
                       </div>
                     ))}
                     {plannerLoading && (
@@ -1068,7 +1074,7 @@ export default function Home() {
                             <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: T.violet, animation: `pulse 1.2s ${i * 0.2}s infinite`, opacity: 0.7 }} />
                           ))}
                         </div>
-                        <span style={{ fontFamily: T.sans, fontSize: 12, color: T.textMuted, fontStyle: "italic" }}>
+                        <span style={{ fontFamily: T.sans, fontSize: T.fontSmall, color: T.textMuted, fontStyle: "italic" }}>
                           {THINKING_PHRASES[thinkingPhraseIndex]}
                         </span>
                         <style>{`@keyframes pulse { 0%,100%{opacity:0.3;transform:scale(0.8)} 50%{opacity:1;transform:scale(1)} }`}</style>
@@ -1078,13 +1084,9 @@ export default function Home() {
                 )}
 
                 {plannerError && (
-                  <div style={{ padding: "10px 14px", borderRadius: 7, border: `1px solid ${T.pinkBorder}`, background: T.pinkDim, fontSize: 12, color: "#F9A8D4", fontFamily: T.sans, marginBottom: 12 }}>
+                  <div style={{ padding: "10px 14px", borderRadius: 7, border: `1px solid ${T.pinkBorder}`, background: T.pinkDim, fontSize: T.fontBody, color: "#F9A8D4", fontFamily: T.sans, marginBottom: 12 }}>
                     {plannerError}
                   </div>
-                )}
-
-                {plannerConversation.length === 0 && (
-                  <div style={{ fontSize: 12, color: T.textDim, fontFamily: T.sans, marginBottom: 8 }}>Describe your AI workload in plain English.</div>
                 )}
 
                 {/* ── FIX: suppressHydrationWarning on textarea ── */}
@@ -1100,12 +1102,12 @@ export default function Home() {
                   style={{
                     width: "100%", height: 96, resize: "none",
                     background: T.bg, border: `1px solid ${adkClarificationPending ? "#78350F" : T.borderStrong}`,
-                    borderRadius: 8, padding: "12px 14px", fontSize: 13,
+                    borderRadius: 8, padding: "12px 14px", fontSize: T.fontBody,
                     fontFamily: T.sans, color: T.text, outline: "none", lineHeight: 1.6,
                   }}
                 />
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
-                  <span style={{ fontFamily: T.mono, fontSize: 9, color: T.textDim, letterSpacing: "0.1em" }}>↵ SEND · SHIFT+↵ NEWLINE</span>
+                  <span style={{ fontFamily: T.mono, fontSize: T.fontMicro, color: T.textDim, letterSpacing: "0.1em" }}>↵ SEND · SHIFT+↵ NEWLINE</span>
                   {canRunSimulation && (
                     <button
                       type="button"
@@ -1113,9 +1115,9 @@ export default function Home() {
                       disabled={plannerLoading}
                       className="sim-btn"
                       style={{
-                        padding: "9px 22px", background: plannerLoading ? T.violetDim : T.violet,
-                        border: `1px solid ${plannerLoading ? T.violetBorder : T.violet}`, borderRadius: 7,
-                        fontSize: 11, fontFamily: T.mono, letterSpacing: "0.1em",
+                        padding: "9px 22px", background: plannerLoading ? T.violetDim : T.violetSolid,
+                        border: `1px solid ${plannerLoading ? T.violetBorder : T.violetSolid}`, borderRadius: 7,
+                        fontSize: T.fontSmall, fontFamily: T.mono, letterSpacing: "0.1em",
                         color: plannerLoading ? "#A78BFA" : "#fff", cursor: plannerLoading ? "not-allowed" : "pointer", fontWeight: 600,
                       }}
                     >
@@ -1127,10 +1129,10 @@ export default function Home() {
 
               {/* assumptions panel */}
               <div style={{ padding: "20px", background: T.bg }}>
-                <div style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: "0.18em", color: "#7C3AED", marginBottom: 4 }}>STRUCTURED ASSUMPTIONS</div>
+                <div style={{ fontFamily: T.mono, fontSize: T.fontMicro, letterSpacing: "0.18em", color: "#7C3AED", marginBottom: 4 }}>STRUCTURED ASSUMPTIONS</div>
                 {planResult
                   ? <AssumptionsTable assumptions={planResult.structured_assumptions} />
-                  : <p style={{ fontSize: 12, color: T.textDim, fontFamily: T.sans, marginTop: 16, lineHeight: 1.6 }}>Assumptions appear here as you chat with the planner.</p>
+                  : <p style={{ fontSize: T.fontSmall, color: T.textDim, fontFamily: T.sans, marginTop: 16, lineHeight: 1.6 }}>Assumptions appear here as you chat with the planner.</p>
                 }
               </div>
             </div>
@@ -1141,7 +1143,7 @@ export default function Home() {
             <>
               <div style={{ marginTop: 48, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <SectionHeader index="03" label="Simulation Results" />
-                <span style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: "0.14em", color: "#7C3AED", background: "rgba(124,58,237,0.1)", border: "1px solid rgba(124,58,237,0.25)", borderRadius: 12, padding: "3px 10px", marginBottom: 20 }}>
+                <span style={{ fontFamily: T.mono, fontSize: T.fontMicro, letterSpacing: "0.14em", color: "#7C3AED", background: "rgba(124,58,237,0.1)", border: "1px solid rgba(124,58,237,0.25)", borderRadius: 12, padding: "3px 10px", marginBottom: 20 }}>
                   POWERED BY GOOGLE ADK
                 </span>
               </div>
@@ -1151,7 +1153,7 @@ export default function Home() {
                 const spec = result._adkWorkloadSpec as any;
                 const draft = specEditMode ? specDraft : spec;
                 const fmtNum = (n: number) => n >= 1_000_000 ? `${(n/1_000_000).toFixed(1)}M` : n >= 1_000 ? `${(n/1_000).toFixed(0)}K` : String(n);
-                const inputStyle = { background: T.bg, border: `1px solid ${T.violetBorder}`, borderRadius: 4, padding: "2px 6px", fontFamily: T.mono, fontSize: 13, fontWeight: 700, color: T.text, outline: "none", width: 100 };
+                const inputStyle = { background: T.bg, border: `1px solid ${T.violetBorder}`, borderRadius: 4, padding: "2px 6px", fontFamily: T.mono, fontSize: T.fontSmall, fontWeight: 700, color: T.text, outline: "none", width: 100 };
                 const selectStyle = { ...inputStyle, width: 120, cursor: "pointer" };
 
                 async function handleRecalculate() {
@@ -1194,21 +1196,21 @@ export default function Home() {
                 return (
                   <div style={{ background: T.surface, border: `1px solid ${specEditMode ? T.violetBorder : T.border}`, borderRadius: 10, padding: "14px 18px", marginBottom: 14 }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                      <span style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: "0.16em", color: T.textMuted }}>
+                      <span style={{ fontFamily: T.mono, fontSize: T.fontMicro, letterSpacing: "0.16em", color: T.textMuted }}>
                         PARSED BY ADK · PARSING AGENT EXTRACTED
                       </span>
                       <div style={{ display: "flex", gap: 8 }}>
                         {specEditMode ? (
                           <>
-                            <button onClick={() => setSpecEditMode(false)} style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: "0.1em", color: T.textMuted, background: "none", border: `1px solid ${T.border}`, borderRadius: 4, padding: "3px 10px", cursor: "pointer" }}>
+                            <button onClick={() => setSpecEditMode(false)} style={{ fontFamily: T.mono, fontSize: T.fontMicro, letterSpacing: "0.1em", color: T.textMuted, background: "none", border: `1px solid ${T.border}`, borderRadius: 4, padding: "3px 10px", cursor: "pointer" }}>
                               CANCEL
                             </button>
-                            <button onClick={handleRecalculate} disabled={recalcLoading} style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: "0.1em", color: "#E9D5FF", background: T.violet, border: "none", borderRadius: 4, padding: "3px 12px", cursor: "pointer", opacity: recalcLoading ? 0.6 : 1 }}>
+                            <button onClick={handleRecalculate} disabled={recalcLoading} style={{ fontFamily: T.mono, fontSize: T.fontMicro, letterSpacing: "0.1em", color: "#fff", background: T.violetSolid, border: "none", borderRadius: 4, padding: "3px 12px", cursor: "pointer", opacity: recalcLoading ? 0.6 : 1 }}>
                               {recalcLoading ? "RECALCULATING…" : "RECALCULATE ↺"}
                             </button>
                           </>
                         ) : (
-                          <button onClick={() => { setSpecDraft({ ...spec }); setSpecEditMode(true); }} style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: "0.1em", color: "#A78BFA", background: "rgba(124,58,237,0.08)", border: `1px solid ${T.violetBorder}`, borderRadius: 4, padding: "3px 10px", cursor: "pointer" }}>
+                          <button onClick={() => { setSpecDraft({ ...spec }); setSpecEditMode(true); }} style={{ fontFamily: T.mono, fontSize: T.fontMicro, letterSpacing: "0.1em", color: "#A78BFA", background: "rgba(124,58,237,0.08)", border: `1px solid ${T.violetBorder}`, borderRadius: 4, padding: "3px 10px", cursor: "pointer" }}>
                             EDIT SPEC
                           </button>
                         )}
@@ -1216,7 +1218,7 @@ export default function Home() {
                     </div>
 
                     {spec.original_description && !specEditMode && (
-                      <p style={{ fontSize: 11, color: "#6B7280", fontFamily: T.sans, fontStyle: "italic", marginBottom: 12, lineHeight: 1.5, borderLeft: `2px solid ${T.border}`, paddingLeft: 10 }}>
+                      <p style={{ fontSize: T.fontSmall, color: T.textMuted, fontFamily: T.sans, fontStyle: "italic", marginBottom: 12, lineHeight: 1.5, borderLeft: `2px solid ${T.border}`, paddingLeft: 10 }}>
                         "{spec.original_description}"
                       </p>
                     )}
@@ -1292,12 +1294,12 @@ export default function Home() {
                     const isHard = backendRec.latency_flag === "api_latency_risk_hard";
                     return (
                       <div style={{ display: "flex", alignItems: "flex-start", gap: 12, background: isHard ? "#450A0A" : "#451A03", border: `1px solid ${isHard ? "#991B1B" : "#92400E"}`, borderRadius: 8, padding: "12px 16px", marginBottom: 20 }}>
-                        <span style={{ fontSize: 16, flexShrink: 0 }}>{isHard ? "🚫" : "⚡"}</span>
+                        <span style={{ fontSize: 18, flexShrink: 0 }}>{isHard ? "🚫" : "⚡"}</span>
                         <div>
-                          <div style={{ fontFamily: T.mono, fontSize: 10, letterSpacing: "0.12em", color: isHard ? "#FCA5A5" : "#FCD34D", fontWeight: 700, marginBottom: 4 }}>
+                          <div style={{ fontFamily: T.mono, fontSize: T.fontMicro, letterSpacing: "0.12em", color: isHard ? "#FCA5A5" : "#FCD34D", fontWeight: 700, marginBottom: 4 }}>
                             {isHard ? "HARD LATENCY REQUIREMENT — API NOT VIABLE" : "LATENCY SLA RISK"}
                           </div>
-                          <p style={{ fontSize: 12, color: isHard ? "#FECACA" : "#FDE68A", fontFamily: T.sans, lineHeight: 1.6 }}>
+                          <p style={{ fontSize: T.fontBody, color: isHard ? "#FECACA" : "#FDE68A", fontFamily: T.sans, lineHeight: 1.6 }}>
                             {backendRec.latency_note || "Managed API round-trip latency (300ms–3s p99) may not meet a real-time SLA. Self-hosted inference in the same datacenter typically achieves 30–200ms p99."}
                           </p>
                         </div>
@@ -1308,10 +1310,10 @@ export default function Home() {
                   {/* quality gap warning banner */}
                   {backendRec?.quality_gap_warning && (
                     <div style={{ display: "flex", alignItems: "flex-start", gap: 12, background: "#1E1B4B", border: "1px solid #4338CA", borderRadius: 8, padding: "12px 16px", marginBottom: 20 }}>
-                      <span style={{ fontSize: 16, flexShrink: 0 }}>⚠️</span>
+                      <span style={{ fontSize: 18, flexShrink: 0 }}>⚠️</span>
                       <div>
-                        <div style={{ fontFamily: T.mono, fontSize: 10, letterSpacing: "0.12em", color: "#A5B4FC", fontWeight: 700, marginBottom: 4 }}>QUALITY GAP WARNING</div>
-                        <p style={{ fontSize: 12, color: "#C7D2FE", fontFamily: T.sans, lineHeight: 1.6 }}>{backendRec.quality_gap_warning}</p>
+                        <div style={{ fontFamily: T.mono, fontSize: T.fontMicro, letterSpacing: "0.12em", color: "#A5B4FC", fontWeight: 700, marginBottom: 4 }}>QUALITY GAP WARNING</div>
+                        <p style={{ fontSize: T.fontBody, color: "#C7D2FE", fontFamily: T.sans, lineHeight: 1.6 }}>{backendRec.quality_gap_warning}</p>
                       </div>
                     </div>
                   )}
@@ -1324,12 +1326,12 @@ export default function Home() {
                       border: `1px solid ${backendRec.toolchain_friction === "high" ? "#7F1D1D" : "#78350F"}`,
                       borderRadius: 8, padding: "12px 16px", marginBottom: 20,
                     }}>
-                      <span style={{ fontSize: 16, flexShrink: 0 }}>🔧</span>
+                      <span style={{ fontSize: 18, flexShrink: 0 }}>🔧</span>
                       <div>
-                        <div style={{ fontFamily: T.mono, fontSize: 10, letterSpacing: "0.12em", color: backendRec.toolchain_friction === "high" ? "#FCA5A5" : "#FCD34D", fontWeight: 700, marginBottom: 4 }}>
+                        <div style={{ fontFamily: T.mono, fontSize: T.fontMicro, letterSpacing: "0.12em", color: backendRec.toolchain_friction === "high" ? "#FCA5A5" : "#FCD34D", fontWeight: 700, marginBottom: 4 }}>
                           {backendRec.toolchain_friction === "high" ? "HIGH TOOLCHAIN FRICTION" : "MODERATE TOOLCHAIN FRICTION"}
                         </div>
-                        <p style={{ fontSize: 12, color: backendRec.toolchain_friction === "high" ? "#FCA5A5" : "#FDE68A", fontFamily: T.sans, lineHeight: 1.6 }}>
+                        <p style={{ fontSize: T.fontBody, color: backendRec.toolchain_friction === "high" ? "#FCA5A5" : "#FDE68A", fontFamily: T.sans, lineHeight: 1.6 }}>
                           {backendRec.toolchain_friction_note || (backendRec.toolchain_friction === "high"
                             ? "This combination requires non-trivial toolchain porting (4–12 weeks). Consider a CUDA provider at a modest cost premium."
                             : "This combination requires porting to a custom SDK (1–4 weeks of engineering). Official or community support exists for this model.")}
@@ -1342,24 +1344,24 @@ export default function Home() {
 
                     {/* verdict */}
                     <div style={{ borderRight: `1px solid ${T.border}`, paddingRight: 24 }}>
-                      <div style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: "0.16em", color: T.textMuted, marginBottom: 10 }}>VERDICT</div>
-                      <div style={{ fontFamily: T.sans, fontSize: 32, fontWeight: 800, letterSpacing: "-0.03em", color: verdictColor, lineHeight: 1, marginBottom: 8 }}>
+                      <div style={{ fontFamily: T.mono, fontSize: T.fontMicro, letterSpacing: "0.16em", color: T.textMuted, marginBottom: 10 }}>VERDICT</div>
+                      <div style={{ fontFamily: T.sans, fontSize: 36, fontWeight: 800, letterSpacing: "-0.03em", color: verdictColor, lineHeight: 1, marginBottom: 8 }}>
                         {isApiRecommended ? "API" : isOpenWeightRecommended ? "Open-Weight" : "Self-hosted"}
                       </div>
                     </div>
 
                     {/* rationale */}
                     <div style={{ borderRight: `1px solid ${T.border}`, padding: "0 24px" }}>
-                      <div style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: "0.16em", color: T.textMuted, marginBottom: 10 }}>WHY</div>
-                      <p style={{ fontSize: 13, lineHeight: 1.65, color: "#D1D5DB", fontFamily: T.sans }}>
+                      <div style={{ fontFamily: T.mono, fontSize: T.fontMicro, letterSpacing: "0.16em", color: T.textMuted, marginBottom: 10 }}>WHY</div>
+                      <p style={{ fontSize: T.fontBody, lineHeight: 1.65, color: "#D1D5DB", fontFamily: T.sans }}>
                         {backendRec?.rationale ?? "Compare the tables below to see API and GPU provider costs side-by-side across growth scenarios."}
                       </p>
                     </div>
 
                     {/* migration trigger / breakeven */}
                     <div style={{ paddingLeft: 24 }}>
-                      <div style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: "0.16em", color: T.amber, marginBottom: 10 }}>BREAKEVEN</div>
-                      <p style={{ fontSize: 13, lineHeight: 1.65, color: "#FCD34D", fontFamily: T.sans }}>
+                      <div style={{ fontFamily: T.mono, fontSize: T.fontMicro, letterSpacing: "0.16em", color: T.amber, marginBottom: 10 }}>BREAKEVEN</div>
+                      <p style={{ fontSize: T.fontBody, lineHeight: 1.65, color: "#FCD34D", fontFamily: T.sans }}>
                         {backendRec?.crossover_note ?? "See crossover analysis in the tables below."}
                       </p>
                       {backendRec?.confidence_score != null && (
@@ -1367,7 +1369,7 @@ export default function Home() {
                           <div style={{ flex: 1, height: 3, background: T.border, borderRadius: 2 }}>
                             <div style={{ width: `${(backendRec.confidence_score * 100).toFixed(0)}%`, height: "100%", background: `linear-gradient(90deg, ${T.violet}, ${T.amber})`, borderRadius: 2 }} />
                           </div>
-                          <span style={{ fontFamily: T.mono, fontSize: 10, color: T.textMuted, whiteSpace: "nowrap" }}>
+                          <span style={{ fontFamily: T.mono, fontSize: T.fontMicro, color: T.textMuted, whiteSpace: "nowrap" }}>
                             {(backendRec.confidence_score * 100).toFixed(0)}% confidence
                           </span>
                         </div>
@@ -1385,9 +1387,9 @@ export default function Home() {
                         { label: "Open-weight GPU at 5x", value: fmtCost(result.scenarios[2].cheapest_open_weight_option?.monthly_cost ?? result.scenarios[2].cheapest_gpu_provider?.monthly_cost) + "/mo", sub: result.scenarios[2].cheapest_open_weight_option?.quality_tier ? `${result.scenarios[2].cheapest_open_weight_option.quality_tier} quality tier` : "projected growth", color: "#34D399" },
                       ].map((item) => (
                         <div key={item.label} style={{ background: T.bg, borderRadius: 8, padding: "12px 14px", border: `1px solid ${T.border}` }}>
-                          <div style={{ fontFamily: T.mono, fontSize: 9, color: T.textMuted, letterSpacing: "0.1em", marginBottom: 6 }}>{item.label.toUpperCase()}</div>
-                          <div style={{ fontFamily: T.mono, fontSize: 18, fontWeight: 700, color: item.color, marginBottom: 4 }}>{item.value}</div>
-                          <div style={{ fontSize: 10, color: T.textMuted, fontFamily: T.sans }}>{item.sub}</div>
+                          <div style={{ fontFamily: T.mono, fontSize: T.fontMicro, color: T.textMuted, letterSpacing: "0.1em", marginBottom: 6 }}>{item.label.toUpperCase()}</div>
+                          <div style={{ fontFamily: T.mono, fontSize: 22, fontWeight: 700, color: item.color, marginBottom: 4 }}>{item.value}</div>
+                          <div style={{ fontSize: T.fontSmall, color: T.textMuted, fontFamily: T.sans }}>{item.sub}</div>
                         </div>
                       ))}
                     </div>
@@ -1410,14 +1412,14 @@ export default function Home() {
                 const proStyle: React.CSSProperties = { display: "flex", gap: 6, marginBottom: 3 };
                 const proText = (s: string) => (
                   <div style={proStyle}>
-                    <span style={{ color: "#34D399", fontSize: 11, lineHeight: 1 }}>+</span>
-                    <span style={{ fontSize: 11, color: "#6EE7B7", fontFamily: T.sans }}>{s}</span>
+                    <span style={{ color: "#34D399", fontSize: T.fontSmall, lineHeight: 1 }}>+</span>
+                    <span style={{ fontSize: T.fontSmall, color: "#6EE7B7", fontFamily: T.sans }}>{s}</span>
                   </div>
                 );
                 const conText = (s: string) => (
                   <div style={proStyle}>
-                    <span style={{ color: "#F87171", fontSize: 11, lineHeight: 1 }}>−</span>
-                    <span style={{ fontSize: 11, color: "#FCA5A5", fontFamily: T.sans }}>{s}</span>
+                    <span style={{ color: "#F87171", fontSize: T.fontSmall, lineHeight: 1 }}>−</span>
+                    <span style={{ fontSize: T.fontSmall, color: "#FCA5A5", fontFamily: T.sans }}>{s}</span>
                   </div>
                 );
 
@@ -1425,7 +1427,7 @@ export default function Home() {
                   <div style={{ marginBottom: 14 }}>
                     {/* ── Step 1: API vs Self-Host ── */}
                     <Card style={{ marginBottom: 6 }}>
-                      <div style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: "0.18em", color: T.textMuted, marginBottom: 14 }}>
+                      <div style={{ fontFamily: T.mono, fontSize: T.fontMicro, letterSpacing: "0.18em", color: T.textMuted, marginBottom: 14 }}>
                         STEP 1 · PRIMARY DECISION — MANAGED API vs SELF-HOSTING
                       </div>
                       <div style={{ display: "flex", gap: 12, alignItems: "stretch" }}>
@@ -1437,19 +1439,19 @@ export default function Home() {
                           border: `1px solid ${isApiRecommended ? T.violetBorder : T.border}`,
                         }}>
                           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                            <span style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: "0.12em", color: isApiRecommended ? "#A78BFA" : T.textMuted }}>
+                            <span style={{ fontFamily: T.mono, fontSize: T.fontMicro, letterSpacing: "0.12em", color: isApiRecommended ? "#A78BFA" : T.textMuted }}>
                               OPTION A · MANAGED API
                             </span>
                             {isApiRecommended && (
-                              <span style={{ fontFamily: T.mono, fontSize: 8, color: "#A78BFA", background: T.violetDim, border: `1px solid ${T.violetBorder}`, borderRadius: 3, padding: "1px 6px" }}>
+                              <span style={{ fontFamily: T.mono, fontSize: T.fontMicro, color: "#A78BFA", background: T.violetDim, border: `1px solid ${T.violetBorder}`, borderRadius: 3, padding: "1px 6px" }}>
                                 RECOMMENDED
                               </span>
                             )}
                           </div>
-                          <div style={{ fontFamily: T.mono, fontSize: 22, fontWeight: 700, color: isApiRecommended ? "#A78BFA" : T.text, marginBottom: 2 }}>
-                            {fmtCost(cheapestApi.monthly_cost)}<span style={{ fontSize: 11, fontWeight: 400, color: T.textMuted }}>/mo</span>
+                          <div style={{ fontFamily: T.mono, fontSize: 28, fontWeight: 700, color: isApiRecommended ? "#A78BFA" : T.text, marginBottom: 2 }}>
+                            {fmtCost(cheapestApi.monthly_cost)}<span style={{ fontSize: T.fontSmall, fontWeight: 400, color: T.textMuted }}>/mo</span>
                           </div>
-                          <div style={{ fontSize: 11, color: T.textMuted, fontFamily: T.sans, marginBottom: 10 }}>
+                          <div style={{ fontSize: T.fontSmall, color: T.textMuted, fontFamily: T.sans, marginBottom: 10 }}>
                             {cheapestApi.display_name ?? cheapestApi.model_key}
                           </div>
                           {proText("Zero ops overhead")}
@@ -1459,7 +1461,7 @@ export default function Home() {
 
                         {/* VS divider */}
                         <div style={{ display: "flex", alignItems: "center", padding: "0 4px" }}>
-                          <span style={{ fontFamily: T.mono, fontSize: 11, color: T.textDim, letterSpacing: "0.1em" }}>VS</span>
+                          <span style={{ fontFamily: T.mono, fontSize: T.fontSmall, color: T.textDim, letterSpacing: "0.1em" }}>VS</span>
                         </div>
 
                         {/* Option B: Self-Host */}
@@ -1469,20 +1471,20 @@ export default function Home() {
                           border: `1px solid ${!isApiRecommended ? "#065F46" : T.border}`,
                         }}>
                           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                            <span style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: "0.12em", color: !isApiRecommended ? "#34D399" : T.textMuted }}>
+                            <span style={{ fontFamily: T.mono, fontSize: T.fontMicro, letterSpacing: "0.12em", color: !isApiRecommended ? "#34D399" : T.textMuted }}>
                               OPTION B · SELF-HOST ON GPU
                             </span>
                             {!isApiRecommended && (
-                              <span style={{ fontFamily: T.mono, fontSize: 8, color: "#34D399", background: "rgba(52,211,153,0.1)", border: "1px solid #065F46", borderRadius: 3, padding: "1px 6px" }}>
+                              <span style={{ fontFamily: T.mono, fontSize: T.fontMicro, color: "#34D399", background: "rgba(52,211,153,0.1)", border: "1px solid #065F46", borderRadius: 3, padding: "1px 6px" }}>
                                 RECOMMENDED
                               </span>
                             )}
                           </div>
-                          <div style={{ fontFamily: T.mono, fontSize: 22, fontWeight: 700, color: !isApiRecommended ? "#34D399" : T.text, marginBottom: 2 }}>
+                          <div style={{ fontFamily: T.mono, fontSize: 28, fontWeight: 700, color: !isApiRecommended ? "#34D399" : T.text, marginBottom: 2 }}>
                             {cheapestSelfHost ? fmtCost(cheapestSelfHost.monthly_cost) : "—"}
-                            <span style={{ fontSize: 11, fontWeight: 400, color: T.textMuted }}>/mo</span>
+                            <span style={{ fontSize: T.fontSmall, fontWeight: 400, color: T.textMuted }}>/mo</span>
                           </div>
-                          <div style={{ fontSize: 11, color: T.textMuted, fontFamily: T.sans, marginBottom: 10 }}>
+                          <div style={{ fontSize: T.fontSmall, color: T.textMuted, fontFamily: T.sans, marginBottom: 10 }}>
                             {cheapestSelfHost?.display_name ?? "Best self-host option"}
                           </div>
                           {proText("No per-token cost at scale")}
@@ -1495,10 +1497,10 @@ export default function Home() {
                     {/* ── Step 2: Which self-host approach? (indented under Option B) ── */}
                     <div style={{ marginLeft: 20, borderLeft: `2px solid rgba(52,211,153,0.18)`, paddingLeft: 14 }}>
                       <Card>
-                        <div style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: "0.18em", color: "#34D399", marginBottom: 4 }}>
+                        <div style={{ fontFamily: T.mono, fontSize: T.fontMicro, letterSpacing: "0.18em", color: "#34D399", marginBottom: 4 }}>
                           STEP 2 · IF SELF-HOSTING — WHICH MODEL APPROACH?
                         </div>
-                        <p style={{ fontSize: 11, color: T.textMuted, fontFamily: T.sans, marginBottom: 14, lineHeight: 1.6 }}>
+                        <p style={{ fontSize: T.fontSmall, color: T.textMuted, fontFamily: T.sans, marginBottom: 14, lineHeight: 1.6 }}>
                           Open-weight models (Llama, Qwen) eliminate per-token cost entirely — you only pay for GPU hours.
                           Running a closed/proprietary model on rented GPU is rarely cheaper because you still pay per-token or per-seat fees on top of hardware.
                         </p>
@@ -1511,30 +1513,30 @@ export default function Home() {
                             border: "1px solid #065F46",
                           }}>
                             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                              <span style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: "0.12em", color: "#34D399" }}>B1 · OPEN-WEIGHT ON GPU</span>
-                              <span style={{ fontFamily: T.mono, fontSize: 8, color: "#34D399", background: "rgba(52,211,153,0.1)", border: "1px solid #065F46", borderRadius: 3, padding: "1px 6px" }}>PREFERRED</span>
+                              <span style={{ fontFamily: T.mono, fontSize: T.fontMicro, letterSpacing: "0.12em", color: "#34D399" }}>B1 · OPEN-WEIGHT ON GPU</span>
+                              <span style={{ fontFamily: T.mono, fontSize: T.fontMicro, color: "#34D399", background: "rgba(52,211,153,0.1)", border: "1px solid #065F46", borderRadius: 3, padding: "1px 6px" }}>PREFERRED</span>
                             </div>
                             {cheapestOW ? (
                               <>
-                                <div style={{ fontFamily: T.mono, fontSize: 20, fontWeight: 700, color: "#34D399", marginBottom: 2 }}>
-                                  {fmtCost(cheapestOW.monthly_cost)}<span style={{ fontSize: 11, fontWeight: 400, color: T.textMuted }}>/mo</span>
+                                <div style={{ fontFamily: T.mono, fontSize: 24, fontWeight: 700, color: "#34D399", marginBottom: 2 }}>
+                                  {fmtCost(cheapestOW.monthly_cost)}<span style={{ fontSize: T.fontSmall, fontWeight: 400, color: T.textMuted }}>/mo</span>
                                 </div>
-                                <div style={{ fontSize: 11, color: T.textMuted, fontFamily: T.sans, marginBottom: 6 }}>{cheapestOW.display_name}</div>
-                                <div style={{ fontSize: 10, color: "#6EE7B7", fontFamily: T.mono, marginBottom: 6 }}>
+                                <div style={{ fontSize: T.fontSmall, color: T.textMuted, fontFamily: T.sans, marginBottom: 6 }}>{cheapestOW.display_name}</div>
+                                <div style={{ fontSize: T.fontMicro, color: "#6EE7B7", fontFamily: T.mono, marginBottom: 6 }}>
                                   {cheapestOW.quality_tier} quality · {cheapestOW.estimated_gpu_count} GPU{cheapestOW.estimated_gpu_count !== 1 ? "s" : ""}
                                 </div>
                                 {cheapestOW.toolchain_friction && cheapestOW.toolchain_friction !== "none" && (() => {
                                   const fc = cheapestOW.toolchain_friction === "high" ? { bg: "rgba(239,68,68,0.08)", border: "#7F1D1D", text: "#FCA5A5", label: "HIGH FRICTION" } : { bg: "rgba(251,191,36,0.08)", border: "#78350F", text: "#FCD34D", label: "MODERATE FRICTION" };
                                   return (
                                     <div style={{ background: fc.bg, border: `1px solid ${fc.border}`, borderRadius: 5, padding: "6px 8px", marginBottom: 6 }}>
-                                      <div style={{ fontFamily: T.mono, fontSize: 8, color: fc.text, letterSpacing: "0.1em", marginBottom: 2 }}>{fc.label}</div>
-                                      <div style={{ fontSize: 10, color: fc.text, fontFamily: T.sans, lineHeight: 1.5 }}>{cheapestOW.toolchain_friction_note}</div>
+                                      <div style={{ fontFamily: T.mono, fontSize: T.fontMicro, color: fc.text, letterSpacing: "0.1em", marginBottom: 2 }}>{fc.label}</div>
+                                      <div style={{ fontSize: T.fontMicro, color: fc.text, fontFamily: T.sans, lineHeight: 1.5 }}>{cheapestOW.toolchain_friction_note}</div>
                                     </div>
                                   );
                                 })()}
                               </>
                             ) : (
-                              <div style={{ fontSize: 11, color: T.textMuted, fontFamily: T.sans }}>No open-weight data</div>
+                              <div style={{ fontSize: T.fontSmall, color: T.textMuted, fontFamily: T.sans }}>No open-weight data</div>
                             )}
                             {proText("Zero per-token cost")}
                             {proText("Open license (commercial OK)")}
@@ -1543,20 +1545,20 @@ export default function Home() {
 
                           {/* vs */}
                           <div style={{ display: "flex", alignItems: "center", padding: "0 4px" }}>
-                            <span style={{ fontFamily: T.mono, fontSize: 10, color: T.textDim, letterSpacing: "0.1em" }}>vs</span>
+                            <span style={{ fontFamily: T.mono, fontSize: T.fontMicro, color: T.textDim, letterSpacing: "0.1em" }}>vs</span>
                           </div>
 
                           {/* B2: GPU infra only (closed model) */}
                           <div style={{ ...optionBoxBase, background: T.bg, border: `1px solid ${T.border}` }}>
                             <div style={{ marginBottom: 8 }}>
-                              <span style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: "0.12em", color: T.textMuted }}>
+                              <span style={{ fontFamily: T.mono, fontSize: T.fontMicro, letterSpacing: "0.12em", color: T.textMuted }}>
                                 B2 · GPU INFRA (CLOSED MODEL)
                               </span>
                             </div>
-                            <div style={{ fontFamily: T.mono, fontSize: 20, fontWeight: 700, color: T.text, marginBottom: 2 }}>
-                              {fmtCost(cheapestGpu.monthly_cost)}<span style={{ fontSize: 11, fontWeight: 400, color: T.textMuted }}>/mo</span>
+                            <div style={{ fontFamily: T.mono, fontSize: 24, fontWeight: 700, color: T.text, marginBottom: 2 }}>
+                              {fmtCost(cheapestGpu.monthly_cost)}<span style={{ fontSize: T.fontSmall, fontWeight: 400, color: T.textMuted }}>/mo</span>
                             </div>
-                            <div style={{ fontSize: 11, color: T.textMuted, fontFamily: T.sans, marginBottom: 8 }}>
+                            <div style={{ fontSize: T.fontSmall, color: T.textMuted, fontFamily: T.sans, marginBottom: 8 }}>
                               {cheapestGpu.display_name} · hardware only
                             </div>
                             {conText("Still requires model license or per-token fees on top")}
@@ -1571,20 +1573,20 @@ export default function Home() {
               })()}
 
               {/* ── DETAILED BREAKDOWN ── */}
-              <div style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: "0.18em", color: T.textDim, marginBottom: 10, marginTop: 8 }}>
+              <div style={{ fontFamily: T.mono, fontSize: T.fontMicro, letterSpacing: "0.18em", color: T.textDim, marginBottom: 10, marginTop: 8 }}>
                 DETAILED BREAKDOWN
               </div>
 
               {/* cost projection chart */}
               <Card style={{ marginBottom: 14 }}>
-                <div style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: "0.18em", color: T.textMuted, marginBottom: 4 }}>OPTION A · MANAGED API — ALL MODELS</div>
-                <p style={{ fontSize: 11, color: T.textMuted, fontFamily: T.sans, marginBottom: 14, lineHeight: 1.6 }}>Monthly cost across all API models at current, 2x, and 5x query volume. Cost-per-query is the key comparison metric.</p>
+                <div style={{ fontFamily: T.mono, fontSize: T.fontMicro, letterSpacing: "0.18em", color: T.textMuted, marginBottom: 4 }}>OPTION A · MANAGED API — ALL MODELS</div>
+                <p style={{ fontSize: T.fontSmall, color: T.textMuted, fontFamily: T.sans, marginBottom: 14, lineHeight: 1.6 }}>Monthly cost across all API models at current, 2x, and 5x query volume. Cost-per-query is the key comparison metric.</p>
                 <div style={{ overflowX: "auto" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, fontFamily: T.mono }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: T.fontSmall, fontFamily: T.mono }}>
                     <thead>
                       <tr style={{ borderBottom: `1px solid ${T.border}` }}>
                         {["Model", "Provider", "Tier", "Current / mo", "¢ per query", "2x / mo", "5x / mo"].map((h) => (
-                          <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontSize: 11, letterSpacing: "0.06em", color: "#9CA3AF", fontWeight: 600 }}>{h}</th>
+                          <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontSize: T.fontSmall, letterSpacing: "0.06em", color: "#9CA3AF", fontWeight: 600 }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -1597,9 +1599,9 @@ export default function Home() {
                         return (
                           <tr key={model.model_key} style={{ borderBottom: `1px solid ${T.border}` }}>
                             <td style={{ padding: "11px 12px", color: T.text, fontWeight: 600 }}>{model.display_name || model.model_key.replace(/_/g, " ")}</td>
-                            <td style={{ padding: "11px 12px", color: T.textMuted, fontSize: 11 }}>{model.provider}</td>
+                            <td style={{ padding: "11px 12px", color: T.textMuted, fontSize: T.fontSmall }}>{model.provider}</td>
                             <td style={{ padding: "11px 12px" }}>
-                              <span style={{ fontSize: 9, padding: "2px 7px", borderRadius: 3, background: `${tc}18`, border: `1px solid ${tc}40`, color: tc, letterSpacing: "0.08em" }}>{model.tier}</span>
+                              <span style={{ fontSize: T.fontMicro, padding: "2px 7px", borderRadius: 3, background: `${tc}18`, border: `1px solid ${tc}40`, color: tc, letterSpacing: "0.08em" }}>{model.tier}</span>
                             </td>
                             <td style={{ padding: "11px 12px", color: T.text, fontWeight: 600 }}>{fmtCost(model.monthly_cost)}</td>
                             <td style={{ padding: "11px 12px", color: T.amber, fontWeight: 600 }}>{(model.cost_per_query * 100).toFixed(4)}¢</td>
@@ -1615,14 +1617,14 @@ export default function Home() {
 
               {/* GPU provider costs table */}
               <Card style={{ marginBottom: 14 }}>
-                <div style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: "0.18em", color: T.textMuted, marginBottom: 4 }}>SELF-HOSTED GPU INFRASTRUCTURE</div>
-                <p style={{ fontSize: 11, color: T.textMuted, fontFamily: T.sans, marginBottom: 14, lineHeight: 1.6 }}>Monthly cost to self-host across CoreWeave, Lambda Labs, AWS Trainium2, and GCP TPU v5e at current query volume.</p>
+                <div style={{ fontFamily: T.mono, fontSize: T.fontMicro, letterSpacing: "0.18em", color: T.textMuted, marginBottom: 4 }}>SELF-HOSTED GPU INFRASTRUCTURE</div>
+                <p style={{ fontSize: T.fontSmall, color: T.textMuted, fontFamily: T.sans, marginBottom: 14, lineHeight: 1.6 }}>Monthly cost to self-host across CoreWeave, Lambda Labs, AWS Trainium2, and GCP TPU v5e at current query volume.</p>
                 <div style={{ overflowX: "auto" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, fontFamily: T.mono }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: T.fontSmall, fontFamily: T.mono }}>
                     <thead>
                       <tr style={{ borderBottom: `1px solid ${T.border}` }}>
                         {["Provider", "Chip", "GPUs needed", "Monthly cost", "¢ per query", "2x cost", "5x cost"].map((h) => (
-                          <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontSize: 11, letterSpacing: "0.06em", color: "#9CA3AF", fontWeight: 600 }}>{h}</th>
+                          <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontSize: T.fontSmall, letterSpacing: "0.06em", color: "#9CA3AF", fontWeight: 600 }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -1634,9 +1636,9 @@ export default function Home() {
                           <tr key={gpu.provider_key} style={{ borderBottom: `1px solid ${T.border}` }}>
                             <td style={{ padding: "11px 12px" }}>
                               <div style={{ color: T.text, fontWeight: 600 }}>{gpu.display_name}</div>
-                              <div style={{ fontSize: 10, color: T.textMuted, marginTop: 2 }}>{gpu.provider}</div>
+                              <div style={{ fontSize: T.fontMicro, color: T.textMuted, marginTop: 2 }}>{gpu.provider}</div>
                             </td>
-                            <td style={{ padding: "11px 12px", color: T.textMuted, fontSize: 11 }}>{gpu.chip}</td>
+                            <td style={{ padding: "11px 12px", color: T.textMuted, fontSize: T.fontSmall }}>{gpu.chip}</td>
                             <td style={{ padding: "11px 12px", color: T.text }}>{gpu.estimated_gpu_count}</td>
                             <td style={{ padding: "11px 12px", color: T.amber, fontWeight: 600 }}>{fmtCost(gpu.monthly_cost)}</td>
                             <td style={{ padding: "11px 12px", color: T.amber }}>{(gpu.cost_per_query * 100).toFixed(4)}¢</td>
@@ -1653,16 +1655,16 @@ export default function Home() {
               {/* open-weight options table */}
               {result.scenarios[0].open_weight_options?.length > 0 && (
                 <Card style={{ marginBottom: 14 }}>
-                  <div style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: "0.18em", color: "#34D399", marginBottom: 4 }}>OPEN-WEIGHT MODELS ON GPU</div>
-                  <p style={{ fontSize: 11, color: T.textMuted, fontFamily: T.sans, marginBottom: 14, lineHeight: 1.6 }}>
+                  <div style={{ fontFamily: T.mono, fontSize: T.fontMicro, letterSpacing: "0.18em", color: "#34D399", marginBottom: 4 }}>OPEN-WEIGHT MODELS ON GPU</div>
+                  <p style={{ fontSize: T.fontSmall, color: T.textMuted, fontFamily: T.sans, marginBottom: 14, lineHeight: 1.6 }}>
                     Self-hosting open-weight models (Llama, Qwen) — no per-token cost, only GPU hours. Compare to managed API for true cost crossover.
                   </p>
                   <div style={{ overflowX: "auto" }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, fontFamily: T.mono }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: T.fontSmall, fontFamily: T.mono }}>
                       <thead>
                         <tr style={{ borderBottom: `1px solid ${T.border}` }}>
                           {["Model", "GPU Provider", "Quality", "Toolchain", "GPUs", "Monthly cost", "¢ per query", "2x cost", "5x cost"].map((h) => (
-                            <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontSize: 11, letterSpacing: "0.06em", color: "#9CA3AF", fontWeight: 600 }}>{h}</th>
+                            <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontSize: T.fontSmall, letterSpacing: "0.06em", color: "#9CA3AF", fontWeight: 600 }}>{h}</th>
                           ))}
                         </tr>
                       </thead>
@@ -1675,9 +1677,9 @@ export default function Home() {
                           return (
                             <tr key={opt.option_key} style={{ borderBottom: `1px solid ${T.border}` }}>
                               <td style={{ padding: "11px 12px", color: T.text, fontWeight: 600 }}>{opt.model_display_name}</td>
-                              <td style={{ padding: "11px 12px", color: T.textMuted, fontSize: 11 }}>{opt.provider_display_name}</td>
+                              <td style={{ padding: "11px 12px", color: T.textMuted, fontSize: T.fontSmall }}>{opt.provider_display_name}</td>
                               <td style={{ padding: "11px 12px" }}>
-                                <span style={{ fontSize: 9, padding: "2px 7px", borderRadius: 3, background: `${tc}18`, border: `1px solid ${tc}40`, color: tc, letterSpacing: "0.08em" }}>{opt.quality_tier}</span>
+                                <span style={{ fontSize: T.fontMicro, padding: "2px 7px", borderRadius: 3, background: `${tc}18`, border: `1px solid ${tc}40`, color: tc, letterSpacing: "0.08em" }}>{opt.quality_tier}</span>
                               </td>
                               <td style={{ padding: "11px 12px" }}>{(() => {
                                 const f = opt.toolchain_friction ?? "none";
@@ -1688,7 +1690,7 @@ export default function Home() {
                                 };
                                 const fs = fStyle[f] ?? fStyle.none;
                                 return (
-                                  <span title={opt.toolchain_friction_note ?? ""} style={{ fontSize: 9, padding: "2px 7px", borderRadius: 3, background: fs.bg, border: `1px solid ${fs.border}`, color: fs.color, letterSpacing: "0.08em", cursor: f !== "none" ? "help" : "default" }}>
+                                  <span title={opt.toolchain_friction_note ?? ""} style={{ fontSize: T.fontMicro, padding: "2px 7px", borderRadius: 3, background: fs.bg, border: `1px solid ${fs.border}`, color: fs.color, letterSpacing: "0.08em", cursor: f !== "none" ? "help" : "default" }}>
                                     {f}
                                   </span>
                                 );
@@ -1709,14 +1711,14 @@ export default function Home() {
 
               {/* cost projection chart */}
               <Card>
-                <div style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: "0.18em", color: T.textMuted, marginBottom: 6 }}>COST PROJECTION</div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: T.text, fontFamily: T.sans, marginBottom: 6 }}>API tiers vs GPU providers across growth scenarios</div>
-                <p style={{ fontSize: 12, color: T.textMuted, fontFamily: T.sans, lineHeight: 1.6, marginBottom: 20 }}>Monthly cost comparison across all API tiers and all GPU providers as workload scale grows.</p>
+                <div style={{ fontFamily: T.mono, fontSize: T.fontMicro, letterSpacing: "0.18em", color: T.textMuted, marginBottom: 6 }}>COST PROJECTION</div>
+                <div style={{ fontSize: T.fontHeading, fontWeight: 700, color: T.text, fontFamily: T.sans, marginBottom: 6 }}>API tiers vs GPU providers across growth scenarios</div>
+                <p style={{ fontSize: T.fontSmall, color: T.textMuted, fontFamily: T.sans, lineHeight: 1.6, marginBottom: 20 }}>Monthly cost comparison across all API tiers and all GPU providers as workload scale grows.</p>
                 <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 16 }}>
                   {costChartSeries.map((series) => (
                     <div key={series.dataKey} style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <div style={{ width: 20, height: 2, background: series.color, borderRadius: 1 }} />
-                      <span style={{ fontFamily: T.mono, fontSize: 10, color: T.textMuted }}>{series.label}</span>
+                      <span style={{ fontFamily: T.mono, fontSize: T.fontMicro, color: T.textMuted }}>{series.label}</span>
                     </div>
                   ))}
                 </div>
@@ -1724,11 +1726,11 @@ export default function Home() {
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={costChartData} margin={{ top: 4, right: 20, left: 8, bottom: 4 }}>
                       <CartesianGrid stroke="rgba(255,255,255,0.04)" strokeDasharray="4 4" vertical={false} />
-                      <XAxis dataKey="scenario" tick={{ fill: "#4B5563", fontSize: 10, fontFamily: "DM Mono, monospace" }} axisLine={{ stroke: "rgba(255,255,255,0.06)" }} tickLine={false} />
-                      <YAxis tick={{ fill: "#4B5563", fontSize: 10, fontFamily: "DM Mono, monospace" }} axisLine={false} tickLine={false} tickFormatter={(v) => fmtCost(Number(v))} />
+                      <XAxis dataKey="scenario" tick={{ fill: "#9CA3AF", fontSize: 12, fontFamily: "DM Mono, monospace" }} axisLine={{ stroke: "rgba(255,255,255,0.06)" }} tickLine={false} />
+                      <YAxis tick={{ fill: "#9CA3AF", fontSize: 12, fontFamily: "DM Mono, monospace" }} axisLine={false} tickLine={false} tickFormatter={(v) => fmtCost(Number(v))} />
                       <Tooltip
-                        contentStyle={{ backgroundColor: "#0A0A12", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, fontSize: 11, fontFamily: "DM Mono, monospace" }}
-                        labelStyle={{ color: "#7C3AED", marginBottom: 6 }}
+                        contentStyle={{ backgroundColor: T.surface, border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, fontSize: T.fontSmall, fontFamily: "DM Mono, monospace" }}
+                        labelStyle={{ color: T.violet, marginBottom: 6 }}
                         itemStyle={{ color: "#D1D5DB" }}
                         formatter={(value, name) => [fmtCost(Number(value)), costChartLabelByKey[String(name)] ?? String(name)]}
                       />
@@ -1750,8 +1752,8 @@ export default function Home() {
 
         {/* ── FOOTER ── */}
         <footer style={{ borderTop: `1px solid ${T.border}`, padding: "20px 40px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: "0.14em", color: T.textDim }}>AI INFRA COST SIMULATOR · P5 · PORTFOLIO</div>
-          <div style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: "0.14em", color: T.textDim }}>Souvik Kundu · souvik-ai-pm-portfolio</div>
+          <div style={{ fontFamily: T.mono, fontSize: T.fontMicro, letterSpacing: "0.14em", color: T.textDim }}>AI INFRA COST SIMULATOR</div>
+          <div style={{ fontFamily: T.mono, fontSize: T.fontMicro, letterSpacing: "0.14em", color: T.textDim }}>Google × Kaggle Agentic AI Bootcamp</div>
         </footer>
       </main>
     </>

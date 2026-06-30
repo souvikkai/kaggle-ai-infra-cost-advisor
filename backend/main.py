@@ -1,6 +1,7 @@
 from typing import Any, Literal, Optional
 import json
 import logging
+import os
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
@@ -75,13 +76,19 @@ async def start_scheduler() -> None:
             "Run: pip install apscheduler"
         )
 
+# CORS origins — localhost for dev, production Vercel URL set via ALLOWED_ORIGINS env var.
+# In Railway: set ALLOWED_ORIGINS=https://your-app.vercel.app
+# Multiple origins can be comma-separated: https://a.vercel.app,https://b.vercel.app
+_extra_origins = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "").split(",") if o.strip()]
+_allowed_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:8080",
+] + _extra_origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:8080",
-    ],
+    allow_origins=_allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
