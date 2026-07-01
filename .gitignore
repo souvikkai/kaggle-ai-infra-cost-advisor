@@ -29,4 +29,5 @@ yarn-error.log*
 
 # ── Debug/scratch artifacts from local testing — never commit ───────────
 debug_*.json
+railway_test.json
 _triage_check.py
