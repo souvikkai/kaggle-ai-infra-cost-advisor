@@ -2,6 +2,7 @@ from typing import Any, Literal, Optional
 import json
 import logging
 import os
+import re
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
@@ -75,6 +76,65 @@ async def start_scheduler() -> None:
             "apscheduler not installed — bi-weekly pricing refresh disabled. "
             "Run: pip install apscheduler"
         )
+
+# ── Input security validation ─────────────────────────────────────────────────
+
+# Maximum character length accepted for any user message. Prevents runaway
+# token costs and timeout failures from extremely large inputs.
+_MAX_MESSAGE_CHARS = 4000
+
+# Prompt injection patterns — phrases that attempt to override system behaviour
+# rather than describe a workload. These are heuristic signals, not a complete
+# defence, but they catch the most common direct injection attempts.
+_INJECTION_PATTERNS = [
+    r"ignore\s+(all\s+)?(previous|prior|above)\s+instructions?",
+    r"disregard\s+(all\s+)?(previous|prior|above)\s+instructions?",
+    r"forget\s+(all\s+)?(previous|prior|above)\s+instructions?",
+    r"you\s+are\s+now\s+(a|an|the)\s+\w+",
+    r"act\s+as\s+(a|an|the)\s+\w+",
+    r"new\s+persona",
+    r"reveal\s+(your\s+)?(system\s+prompt|instructions?|prompt)",
+    r"print\s+(your\s+)?(system\s+prompt|instructions?|prompt)",
+    r"show\s+(me\s+)?(your\s+)?(system\s+prompt|instructions?|prompt)",
+    r"jailbreak",
+    r"<\s*script",
+    r"prompt\s+injection",
+]
+_INJECTION_RE = re.compile("|".join(_INJECTION_PATTERNS), re.IGNORECASE)
+
+
+def _validate_message(message: str) -> None:
+    """
+    Raises HTTP 400 if the message:
+      - Is empty
+      - Exceeds _MAX_MESSAGE_CHARS (prevents runaway token costs / timeouts)
+      - Matches known prompt injection patterns (prevents system prompt override)
+
+    Defence-in-depth: the ADK pipeline prompts are also written to be robust
+    to adversarial inputs, but validating at the API boundary is an earlier,
+    separate layer of protection that stops bad input before it reaches the LLM.
+    """
+    if not message or not message.strip():
+        raise HTTPException(status_code=400, detail="Message cannot be empty.")
+
+    if len(message) > _MAX_MESSAGE_CHARS:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Message exceeds the {_MAX_MESSAGE_CHARS}-character limit "
+                f"({len(message)} characters). Please shorten your description."
+            ),
+        )
+
+    if _INJECTION_RE.search(message):
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Your message contains patterns that look like prompt injection attempts. "
+                "Please describe your AI workload in plain English."
+            ),
+        )
+
 
 # CORS origins — localhost for dev, production Vercel URL set via ALLOWED_ORIGINS env var.
 # In Railway: set ALLOWED_ORIGINS=https://your-app.vercel.app
@@ -219,6 +279,8 @@ async def adk_plan(request: AdkPlanRequest):
             detail="GOOGLE_API_KEY or GEMINI_API_KEY must be set to use the ADK pipeline.",
         )
 
+    _validate_message(request.message)
+
     from agents.runner import run_parse_judge
     try:
         result = await run_parse_judge(
@@ -282,6 +344,8 @@ async def adk_simulate(request: AdkSimulateRequest):
             status_code=503,
             detail="GOOGLE_API_KEY or GEMINI_API_KEY must be set to use the ADK pipeline.",
         )
+
+    _validate_message(request.message)
 
     from agents.runner import run_full_pipeline
     try:
