@@ -19,7 +19,7 @@ import {
 
 // Single source of truth for the backend base URL. Change this one line
 // instead of hunting down every fetch() call when the dev server port changes.
-const API_BASE_URL = "http://127.0.0.1:8006";
+const API_BASE_URL = "https://kaggle-ai-infra-cost-advisor-production.up.railway.app";
 
 /* ─────────────────────────── types ─────────────────────────── */
 
