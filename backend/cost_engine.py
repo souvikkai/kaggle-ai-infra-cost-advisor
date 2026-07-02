@@ -1,27 +1,61 @@
+"""
+Deterministic Cost Engine
+=========================
+Pure-math cost calculations for the AI Infra Cost Advisor. No LLM involved.
+
+Design principle: the ReasoningAgent receives ground-truth cost numbers from
+this module and is explicitly instructed not to invent or modify them. Keeping
+cost math deterministic and LLM-free ensures recommendations are reproducible
+and auditable — two properties that matter when cost figures influence real
+infrastructure spend decisions.
+
+Three calculation families:
+  - calculate_all_api_costs()       — managed API token costs across 6 providers
+  - calculate_all_gpu_provider_costs() — raw GPU rental costs (closed model on GPU)
+  - calculate_all_open_weight_costs()  — open-weight model on GPU (most common
+                                         self-host path; no per-token cost)
+
+All three are called for each growth scenario (1×, 2×, 5×) by calculate_scenarios().
+"""
+
 import json
 from pathlib import Path
 
 DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "pricing_snapshot.json"
 
+# Growth multipliers applied to monthly_queries for scenario projections.
+# Three scenarios give the ReasoningAgent enough signal to identify the breakeven
+# point — the query volume at which self-hosting becomes cheaper than API.
 SCENARIOS = {
     "current": 1,
     "growth_2x": 2,
     "growth_5x": 5,
 }
 
+# Traffic pattern → GPU capacity multiplier mapping.
+# Self-hosted GPU must be provisioned for PEAK load, not average load.
+# A workload with spiky traffic (e.g. HFT signals, fraud detection on payment
+# spikes) must hold enough GPU capacity to handle burst traffic, even though
+# that capacity sits mostly idle during off-peak periods.
+# API pricing has no this problem — it scales perfectly elastically per query.
+# This asymmetry is a key reason the breakeven point shifts for bursty workloads.
 BURSTINESS_MULTIPLIERS = {
-    "low": 1.0,
-    "medium": 1.15,
-    "high": 1.35,
+    "low": 1.0,     # Smooth 24/7 load — no headroom needed beyond utilization buffer
+    "medium": 1.15, # Predictable peaks (business hours, daily batch) — 15% headroom
+    "high": 1.35,   # Spiky / unpredictable bursts — 35% headroom for peak capacity
 }
 
 
 def load_pricing():
+    """Load pricing snapshot from JSON. Called fresh on each request so pricing
+    updates (via scripts/refresh_pricing.py) take effect without restart."""
     with open(DATA_PATH, "r") as f:
         return json.load(f)
 
 
 def apply_enterprise_discount(cost: float, discount_pct: float) -> float:
+    """Apply a negotiated enterprise API discount to list pricing.
+    Most hyperscaler APIs offer 10–30% discounts at committed usage tiers."""
     return round(cost * (1 - discount_pct / 100.0), 2)
 
 
@@ -34,6 +68,14 @@ def calculate_api_cost(
     output_tokens_per_query: int,
     enterprise_api_discount_pct: float = 0,
 ) -> dict:
+    """
+    Calculate managed API cost for a single model.
+
+    Formula: (queries × tokens / 1M) × price_per_million
+    Input and output tokens are billed separately because output tokens cost
+    3–5× more than input tokens across most providers — output generation is
+    compute-intensive (autoregressive decoding), while input is mostly prefill.
+    """
     input_cost = (monthly_queries * input_tokens_per_query / 1_000_000) * model_pricing["input_per_million"]
     output_cost = (monthly_queries * output_tokens_per_query / 1_000_000) * model_pricing["output_per_million"]
     monthly_cost = apply_enterprise_discount(input_cost + output_cost, enterprise_api_discount_pct)
@@ -51,6 +93,8 @@ def calculate_all_api_costs(
     output_tokens_per_query: int,
     enterprise_api_discount_pct: float = 0,
 ) -> list[dict]:
+    """Calculate and rank API costs across all models in pricing_snapshot.json.
+    Results sorted ascending by monthly_cost so cheapest option is always index 0."""
     pricing = load_pricing()
     results = []
     for model_key, model_pricing in pricing["models"].items():
@@ -83,19 +127,52 @@ def calculate_gpu_provider_cost(
     burstiness_factor: str = "medium",
     failover_reserve_pct: float = 15,
 ) -> dict:
+    """
+    Calculate self-hosted GPU cost for a single provider.
+
+    GPU count formula (throughput-based):
+      required_tps = total_tokens_per_month / seconds_per_month
+      base_gpus    = required_tps / tokens_per_second_per_gpu
+      gpu_count    = ceil(base_gpus / utilization × burstiness × failover)
+
+    Key design decision — throughput-based sizing:
+    Unlike a min-GPU floor approach, this formula derives GPU count from actual
+    throughput requirements. At low volumes, the result may be < 1 GPU — meaning
+    a single GPU is more than sufficient. At high volumes, it correctly scales up.
+    The burstiness and failover multipliers capture real operational overhead that
+    a simple average-load calculation would miss.
+
+    Why self-hosted GPU costs are structured differently from API costs:
+    API pricing is perfectly elastic — you pay per token, zero fixed cost.
+    GPU rental is a fixed monthly commitment regardless of actual usage.
+    This asymmetry is why API wins at low volume and self-hosting wins at scale.
+    """
     total_tokens = monthly_queries * (input_tokens_per_query + output_tokens_per_query)
     seconds_per_month = 30 * 24 * 3600
     tokens_per_sec_per_gpu = provider_config["tokens_per_second_per_gpu"]
     hourly_cost = provider_config["hourly_cost_per_gpu"]
 
+    # Average tokens per second needed to serve this workload
     required_tps = total_tokens / seconds_per_month
+
+    # GPU utilization < 100% because inference batching, queuing, and overhead
+    # mean GPUs are never fully saturated. 70% is a conservative real-world default.
     utilization = max(gpu_utilization_pct / 100.0, 0.01)
+
+    # Traffic pattern multiplier — see BURSTINESS_MULTIPLIERS above
     burstiness = BURSTINESS_MULTIPLIERS.get(burstiness_factor, 1.15)
+
+    # Failover reserve: spare GPU capacity for rolling upgrades, incident response,
+    # and model version swaps without taking the serving endpoint offline
     failover = 1 + failover_reserve_pct / 100.0
 
     base_gpus = required_tps / tokens_per_sec_per_gpu
+    # Round up with 0.5 bias — always prefer one extra GPU over underprovisioning
     gpu_count = max(1, round((base_gpus / utilization) * burstiness * failover + 0.5))
 
+    # GPU cost = GPU count × hourly rate × hours in month
+    # Unlike API cost, this doesn't scale with query volume — it's fixed once
+    # you've provisioned the cluster
     monthly_cost = round(gpu_count * hourly_cost * 24 * 30, 2)
     cost_per_query = monthly_cost / monthly_queries if monthly_queries else 0
 

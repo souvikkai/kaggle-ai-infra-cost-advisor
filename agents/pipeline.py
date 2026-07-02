@@ -499,10 +499,19 @@ def cost_engine_bridge(ctx: Any) -> None:
 
     try:
         from backend.cost_engine import calculate_scenarios
+
+        # Map traffic_pattern from workload spec → burstiness_factor for cost engine.
+        # This is the key link between what the Parsing Agent inferred about traffic
+        # shape and the actual GPU capacity multiplier applied to cost calculations.
+        _traffic_map = {"smooth": "low", "predictable_peaks": "medium", "spiky": "high"}
+        traffic_pattern = spec.get("traffic_pattern", "predictable_peaks")
+        burstiness_factor = _traffic_map.get(traffic_pattern, "medium")
+
         scenarios = calculate_scenarios(
             monthly_queries=monthly_queries,
             input_tokens_per_query=input_tokens,
             output_tokens_per_query=output_tokens,
+            burstiness_factor=burstiness_factor,
             gpu_price_overrides=gpu_price_overrides or None,
         )
         ctx.state["cost_scenarios"] = _json.dumps(scenarios, default=str)
