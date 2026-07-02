@@ -421,6 +421,102 @@ EVAL_CASES: list[EvalCase] = [
             "must NOT trigger this — only requests to self-host a named closed model."
         ),
     ),
+
+    # ── TRAFFIC PATTERN INFERENCE TESTS (3 / 18) ─────────────────────────────
+    # These three cases verify that the Parsing Agent correctly infers
+    # traffic_pattern from domain context, and that the value flows through
+    # to the cost engine's burstiness multiplier. Added after implementing
+    # the traffic_pattern field in pipeline.py and runner.py.
+    # parse_checks use the new string equality format: field_name: "expected_value"
+
+    EvalCase(
+        id="TP-01",
+        category="adversarial",
+        message=(
+            "High-frequency trading signal generator. We process about 50 million "
+            "market data signals per month. Each signal is a short feature vector "
+            "input around 30 tokens, and the output is a binary buy/sell "
+            "recommendation plus a confidence score, about 10 tokens. Latency "
+            "is critical — signals must be processed in under 100 milliseconds."
+        ),
+        expected_verdict="pass",
+        expected_rec="Open-Weight GPU",
+        expected_confidence="high",
+        parse_checks={
+            "traffic_pattern": "spiky",
+            "monthly_queries": (10_000_000, 100_000_000),
+        },
+        notes=(
+            "HFT signal generation is the canonical example of a spiky workload — "
+            "market events (open, close, news) cause extreme burst traffic that "
+            "cannot be predicted in advance. The Parsing Agent should infer "
+            "'spiky' from the domain context even though the user never used "
+            "the word 'spiky' or 'bursty'. Also carries a hard latency requirement "
+            "(under 100ms explicit), so the recommendation should be Open-Weight GPU "
+            "regardless of cost ratio. A traffic_pattern of 'smooth' or "
+            "'predictable_peaks' is the regression to watch for."
+        ),
+    ),
+
+    EvalCase(
+        id="TP-02",
+        category="edge_case",
+        message=(
+            "Document summarization pipeline for a legal tech company. We process "
+            "contracts and legal filings uploaded by enterprise clients — about "
+            "2 million documents per month. Documents arrive continuously throughout "
+            "the day and night as clients upload them. Average document is around "
+            "2,000 tokens of input, and we generate a 400-token executive summary."
+        ),
+        expected_verdict="pass",
+        expected_rec="Open-Weight GPU",
+        expected_confidence="high",
+        parse_checks={
+            "traffic_pattern": "smooth",
+            "monthly_queries": (1_000_000, 5_000_000),
+            "input_tokens_per_query": (1_000, 4_000),
+            "output_tokens_per_query": (200, 800),
+        },
+        notes=(
+            "Continuous 24/7 document uploads with no stated peak window. "
+            "The Parsing Agent should infer 'smooth' from 'continuously throughout "
+            "the day and night' — this is explicitly a flat-load workload with no "
+            "burst pattern. At 2M queries/month with 2,400 tokens total per query, "
+            "the cost engine should recommend self-hosting (Open-Weight GPU) since "
+            "token volume is large enough for GPU to break even. The smooth "
+            "traffic_pattern means GPU costs use the 1.0x multiplier (no headroom), "
+            "making self-hosting look slightly more attractive than with a "
+            "predictable_peaks or spiky pattern. A traffic_pattern of 'spiky' "
+            "or 'predictable_peaks' is the regression to watch for."
+        ),
+    ),
+
+    EvalCase(
+        id="TP-03",
+        category="edge_case",
+        message=(
+            "AI assistant for a B2B project management SaaS. Our users are "
+            "enterprise teams who work during business hours Monday to Friday. "
+            "About 500,000 queries per month. Users ask questions about their "
+            "projects and get short paragraph responses."
+        ),
+        expected_verdict="needs_user",
+        expected_rec="n/a",
+        expected_confidence="any",
+        notes=(
+            "Traffic pattern should be inferred as 'predictable_peaks' from "
+            "'business hours Monday to Friday' — this is a textbook known-peak-window "
+            "workload. However, this case is expected to return needs_user because "
+            "token lengths are genuinely unspecified ('short paragraph responses' is "
+            "qualitative). The verdict check confirms needs_user fires correctly. "
+            "We cannot assert traffic_pattern via parse_checks here since those "
+            "checks only run on verdict == 'pass' — this is a deliberate harness "
+            "constraint. To verify traffic_pattern inference for this domain, "
+            "extend this case by appending 'Additional context: inputs are about "
+            "50 tokens, outputs are about 150 tokens' and change expected_verdict "
+            "to 'pass' with parse_checks traffic_pattern: 'predictable_peaks'."
+        ),
+    ),
 ]
 
 
@@ -496,14 +592,24 @@ def score_case(case: EvalCase, response: dict) -> EvalResult:
         score_verdict = verdict == case.expected_verdict
 
     # ── SCORE: PARSE ─────────────────────────────────────────────────────────
+    # parse_checks supports two check types, keyed by field name:
+    #   Numeric range:    field_name: (lo, hi)   → checks lo <= int(val) <= hi
+    #   String equality:  field_name: "expected"  → checks str(val) == "expected"
+    # String checks allow asserting inferred Tier 2 fields like traffic_pattern.
     score_parse: bool | None = None
     if case.parse_checks and verdict == "pass":
         checks_passed = []
-        for field_name, (lo, hi) in case.parse_checks.items():
+        for field_name, check in case.parse_checks.items():
             val = workload_spec.get(field_name)
             if val is None:
                 checks_passed.append(False)
+            elif isinstance(check, str):
+                # String equality check — used for inferred categorical fields
+                # e.g. traffic_pattern: "spiky", latency_sla: "real-time"
+                checks_passed.append(str(val) == check)
             else:
+                # Numeric range check — tuple (lo, hi)
+                lo, hi = check
                 checks_passed.append(lo <= int(val) <= hi)
         score_parse = all(checks_passed)
 
