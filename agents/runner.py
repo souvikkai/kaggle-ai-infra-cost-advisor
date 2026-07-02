@@ -251,11 +251,25 @@ def _run_cost_engine(spec: dict[str, Any]) -> list[dict] | None:
     output_tokens = int(spec.get("output_tokens_per_query") or 0)
     if not (monthly_queries and input_tokens and output_tokens):
         return None
+
+    # Map Parsing Agent's traffic_pattern vocabulary → cost engine's burstiness_factor.
+    # smooth            → low   (1.0x multiplier — flat 24/7 load, no peak headroom)
+    # predictable_peaks → medium (1.15x — known daily/weekly spikes)
+    # spiky             → high  (1.35x — unpredictable bursts, must provision for peak)
+    _traffic_to_burstiness = {
+        "smooth": "low",
+        "predictable_peaks": "medium",
+        "spiky": "high",
+    }
+    traffic_pattern = spec.get("traffic_pattern", "predictable_peaks")
+    burstiness_factor = _traffic_to_burstiness.get(traffic_pattern, "medium")
+
     from backend.cost_engine import calculate_scenarios
     return calculate_scenarios(
         monthly_queries=monthly_queries,
         input_tokens_per_query=input_tokens,
         output_tokens_per_query=output_tokens,
+        burstiness_factor=burstiness_factor,
     )
 
 

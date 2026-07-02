@@ -97,6 +97,24 @@ TIER 2 — workload character (extract if stated, else infer from use-case):
   - reasoning_complexity (str): "low" | "medium" | "high"
   - context_complexity (str): "low" | "medium" | "high"
   - hallucination_sensitivity (str): "low" | "medium" | "high"
+  - traffic_pattern (str): "smooth" | "predictable_peaks" | "spiky"
+      How evenly traffic arrives across the day/week. This drives GPU capacity
+      planning for self-hosted options — spiky workloads require provisioning
+      for peak load, not average load, which significantly increases GPU cost.
+      Inference rules (use these when the user hasn't stated it explicitly):
+        "smooth"            → 24/7 steady load; customer support bots, API
+                              services with many users, background processing.
+                              GPU capacity multiplier: 1.0x (no headroom needed).
+        "predictable_peaks" → Traffic spikes at known times (business hours,
+                              daily batch jobs, morning rush). Healthcare,
+                              B2B SaaS, scheduling systems, daily pipelines.
+                              GPU capacity multiplier: 1.15x headroom.
+        "spiky"             → Unpredictable or extreme bursts; HFT signals,
+                              fraud detection on payment spikes, viral consumer
+                              apps, event-driven systems.
+                              GPU capacity multiplier: 1.35x headroom.
+      If genuinely unclear after reading the description, default to
+      "predictable_peaks" and note it in advisory_notes.
 
 TIME UNIT NORMALISATION — always convert to monthly before writing monthly_queries:
   - "per second" → × 60 × 60 × 24 × 30  (e.g. 10/s = 25,920,000/month)
@@ -164,6 +182,7 @@ Output ONLY a JSON object. No prose, no markdown fences. Example:
   "reasoning_complexity": "medium",
   "context_complexity": "low",
   "hallucination_sensitivity": "medium",
+  "traffic_pattern": "predictable_peaks",
   "advisory_notes": "",
   "field_confidence": {}
 }
@@ -519,6 +538,19 @@ cost advisor. You receive REAL pricing data — do NOT invent numbers.
 
 Workload specification:
 {workload_spec}
+
+TRAFFIC PATTERN NOTE: The workload spec includes a "traffic_pattern" field
+("smooth" | "predictable_peaks" | "spiky"). This has already been used to
+apply a GPU capacity multiplier to the cost scenarios:
+  - smooth            → 1.0x  (flat load, GPU costs reflect average throughput)
+  - predictable_peaks → 1.15x (15% headroom for known peak windows)
+  - spiky             → 1.35x (35% headroom for unpredictable burst traffic)
+If the pattern is "spiky" or "predictable_peaks", briefly mention in your
+rationale that GPU costs include peak-load headroom — this is why self-hosted
+GPU costs may appear higher than a naive calculation would suggest, and it is
+an HONEST reflection of real deployment cost, not an overestimate.
+If the pattern is "smooth", you can note that GPU costs assume steady load
+with no peak headroom needed.
 
 Cost scenarios (deterministic, from pricing engine):
 {cost_scenarios}
